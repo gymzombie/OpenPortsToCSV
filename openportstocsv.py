@@ -74,9 +74,8 @@ def populatescandata(csvData):
 
 
 def makenmapgreatagain(host_list):
-    """Converts the raw CSV to human friendly format"""
+    """Sorts through the TCP and UDP ports, dropping duplicates"""
     for line in host_list:
-        str_ip = line[C_IP]
         str_tcp = ''
         str_udp = ''
         if len(line[C_TCP]) > 0:
@@ -94,6 +93,12 @@ def makenmapgreatagain(host_list):
                 str_udp += str(i_udp) + ', '
             if len(str_udp) > 0:
                 str_udp = str_udp[:-2]
+
+
+def prettyoutput(host_list):
+    """Converts the raw CSV to human friendly format"""
+    str_ip = line[C_IP]
+    for line in host_list:
         if len(str_tcp) > 0 and len(str_udp) > 0:
             print('\"' + str_ip + '\",\"TCP: ' + str_tcp + '\nUDP: ' + str_udp + '\"')
         if len(str_tcp) == 0 and len(str_udp) > 0:
@@ -103,7 +108,7 @@ def makenmapgreatagain(host_list):
 
 
 def main():
-    makenmapgreatagain(populatescandata(openfiles(file_list)))
+    prettyoutput(makenmapgreatagain(populatescandata(openfiles(file_list))))
 
 
 if __name__ == "__main__":
