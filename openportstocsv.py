@@ -13,17 +13,7 @@ parser = argparse.ArgumentParser(description='Script to loop through all grepabl
 parser.add_argument('--folder', '-f', required=True, help='Name of folder where .gnmap files are located')
 args = parser.parse_args()
 
-
-### FUNCTIONS ###
-def checkaddr(mlist, maddr):
-    for a in mlist:
-        if a[C_IP] == maddr:
-            return mlist.index(a)
-    return -1
-
-
-### MAIN ###
-
+# Setting initial variables
 C_IP = 0
 C_TCP = 1
 C_UDP = 2
@@ -31,6 +21,13 @@ host_list = []
 
 folder_name = args.folder()
 file_list = os.listdir(folder_name)
+
+
+def checkaddr(mlist, maddr):
+    for a in mlist:
+        if a[C_IP] == maddr:
+            return mlist.index(a)
+    return -1
 
 
 def openfiles(filelist):
