@@ -109,9 +109,6 @@ def main():
     makenmapgreatagain(populatescandata(openfiles(file_list)))
 
 
-
-
 if __name__ == "__main__":
     # execute only if run as a script
     main()
-
