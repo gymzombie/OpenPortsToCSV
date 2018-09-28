@@ -41,20 +41,20 @@ def openfiles(filelist):
             return csvData
 
 
-def populatescandata(csvData):
+def populatescandata(csvdata):
     """Doing the initial population of the CSV file with raw data from the grepable nmap scan results"""
-    for i in range(len(csvData)):
-        if csvData[i][0].startswith('Host') and csvData[i][1].startswith('Ports'):
-            listHost = csvData[i][0].split()
+    for i in range(len(csvdata)):
+        if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
+            listHost = csvdata[i][0].split()
             checkval = checkaddr(host_list, listHost[1])
             if checkval == -1:
                 m_listitem = [listHost[1], [], []]
-                listPorts = csvData[i][1][7:].split(',')
-                for p in range(len(listPorts)):
+                listports = csvdata[i][1][7:].split(',')
+                for p in range(len(listports)):
                     # -# uncomment the below if you need to debug
                     # print(p)
                     # print(csvData[i][1][7:])
-                    mPorts = listPorts[p].split('/')
+                    mPorts = listports[p].split('/')
                     if mPorts[1] == 'open':
                         if mPorts[2] == 'tcp':
                             m_listitem[C_TCP].append(int(mPorts[0].strip()))
@@ -63,21 +63,21 @@ def populatescandata(csvData):
                 host_list.append(m_listitem)
             else:
                 m_listitem = [listHost[1], [], []]
-                listPorts = csvData[i][1][7:].split(',')
-                for p in range(len(listPorts)):
-                    mPorts = listPorts[p].split('/')
+                listports = csvdata[i][1][7:].split(',')
+                for p in range(len(listports)):
+                    mPorts = listports[p].split('/')
                     if mPorts[1] == 'open':
                         if mPorts[2] == 'tcp':
                             host_list[checkval][C_TCP].append(int(mPorts[0].strip()))
                         if mPorts[2] == 'udp':
                             host_list[checkval][C_UDP].append(int(mPorts[0].strip()))
+            return host_list
 
 
-def makenmapgreatagain(host_list):
-    """Sorts through the TCP and UDP ports, dropping duplicates"""
+def dropdupetcp(host_list):
+    """Sorts through TCP ports, dropping duplicates"""
     for line in host_list:
         str_tcp = ''
-        str_udp = ''
         if len(line[C_TCP]) > 0:
             list_tcp = list(set(line[C_TCP]))
             list_tcp.sort()
@@ -85,7 +85,13 @@ def makenmapgreatagain(host_list):
                 str_tcp += str(i_tcp) + ', '
             if len(str_tcp) > 0:
                 str_tcp = str_tcp[:-2]
+    return str_tcp
 
+
+def dropdupeudp(host_list):
+    """Sorts through UDP ports, dropping duplicates"""
+    for line in host_list:
+        str_udp = ''
         if len(line[C_UDP]) > 0:
             list_udp = list(set(line[C_UDP]))
             list_udp.sort()
@@ -93,6 +99,7 @@ def makenmapgreatagain(host_list):
                 str_udp += str(i_udp) + ', '
             if len(str_udp) > 0:
                 str_udp = str_udp[:-2]
+    return str_udp
 
 
 def prettyoutput(host_list):
@@ -108,7 +115,9 @@ def prettyoutput(host_list):
 
 
 def main():
-    prettyoutput(makenmapgreatagain(populatescandata(openfiles(file_list))))
+    populatescandata(openfiles(file_list))
+
+    prettyoutput(makenmapgreatagain(
 
 
 if __name__ == "__main__":
