@@ -31,7 +31,7 @@ def checkaddr(mlist, maddr):
 
 
 def openfiles(filelist):
-    """ Open the .gnmap files and creates the output CSV for writing """
+    """ Open the .gnmap files and creates the output CSV for writing. Turns the .gnmap into a tab delimited array"""
     for file_name in filelist:
         if file_name.endswith(".gnmap"):
             # print("opening: " + file_name)
@@ -41,12 +41,29 @@ def openfiles(filelist):
             return csvData
 
 
+def getports(csvdata):
+    """if open -> append to dictionary "port" and "protocol"
+    upper protocol
+    sort by port
+    format"""
+    for i in range(len(csvdata)):
+        if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
+            for eachhost in csvdata[i][0].split():
+                hostandports.append(eachhost)
+                for eachport in eachhost:
+                    
+
+
+
 def populatescandata(csvdata):
     """Doing the initial population of the CSV file with raw data from the grepable nmap scan results"""
     for i in range(len(csvdata)):
         if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
+            # listHost is literally "each host in the list"
             listHost = csvdata[i][0].split()
+            # NEEDHELP: I believe this is checking to see if listHost is empty?
             checkval = checkaddr(host_list, listHost[1])
+            # NEEDHELP: Does this ever get called? Based on the checkaddr function, I don't know what would trigger this.
             if checkval == -1:
                 m_listitem = [listHost[1], [], []]
                 listports = csvdata[i][1][7:].split(',')
