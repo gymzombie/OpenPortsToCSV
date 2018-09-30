@@ -20,7 +20,7 @@ C_UDP = 2
 host_list = []
 
 folder_name = args.folder()
-file_list = os.listdir(folder_name)
+filelist = os.listdir(folder_name)
 
 
 def checkaddr(mlist, maddr):
@@ -37,23 +37,53 @@ def openfiles(filelist):
             # print("opening: " + file_name)
             csvFile = open(folder_name + file_name)
             csvReader = csv.reader(csvFile, delimiter='\t')
-            csvData = list(csvReader)
-            return csvData
+            csvdata = list(csvReader)
+            return csvdata
 
 
-def getports(csvdata):
-    """if open -> append to dictionary "port" and "protocol"
-    upper protocol
-    sort by port
-    format"""
+def getinterestingdata(csvdata):
+    """Return a list of entire data for the hosts that have open ports"""
+    interestingrows = []
     for i in range(len(csvdata)):
         if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
-            for eachhost in csvdata[i][0].split():
-                hostandports.append(eachhost)
-                for eachport in eachhost:
+            interestingrows.append(csvdata[i])
+    return interestingrows
+    
+
+def gethosts(interestingrows):
+    """Get the IP addresses of the hosts with open ports"""
+    interestinghosts = []
+    for eachhost in range(len(interestingrows)):
+        interestinghosts.append(interestingrows[eachhost][0].split(' ')[1])
+    return interestinghosts
+    
+    
+def getports(interestingrows):
+    """A List of lists consisting of [tcp[port1,port2]][udp[port1,port2]]"""
+    interestingports = []
+    for eachhost in range(len(interestingrows)):
+        # Lets get rid of "Ports:" and the spaces
+        interestingports.append(interestingrows[eachhost][1].split(' ')[1:])
+        for eachrow in range(len(interestingports)):
+            interestingports.split('/')[eachrow]
+    return interestingports
+      
+                                
+    hostandports.append(eachhost)
+    for eachport in eachhost:
                     
 
-
+    """if open -> append to List of list of list
+    upper protocol
+    sort by port
+    format
+        
+     
+      [ [[host1],[tcp[port1,port2,port3]],[udp[port1]]],[[host2],[tcp[port1,port2,port3]]]] """
+      
+      
+        
+''' gymzombie is trying to replace all this. Hopefully this is no longer used:
 
 def populatescandata(csvdata):
     """Doing the initial population of the CSV file with raw data from the grepable nmap scan results"""
@@ -89,6 +119,7 @@ def populatescandata(csvdata):
                         if mPorts[2] == 'udp':
                             host_list[checkval][C_UDP].append(int(mPorts[0].strip()))
             return host_list
+'''
 
 
 def dropdupetcp(host_list):
@@ -132,7 +163,7 @@ def prettyoutput(host_list):
 
 
 def main():
-    populatescandata(openfiles(file_list))
+    getinterestinghosts(openfiles(filelist))
 
     prettyoutput(makenmapgreatagain(
 
