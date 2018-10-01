@@ -22,13 +22,13 @@ host_list = []
 folder_name = args.folder()
 filelist = os.listdir(folder_name)
 
-
+""" I have no idea what this does:
 def checkaddr(mlist, maddr):
     for a in mlist:
         if a[C_IP] == maddr:
             return mlist.index(a)
     return -1
-
+"""
 
 def openfiles(filelist):
     """ Open the .gnmap files and creates the output CSV for writing. Turns the .gnmap into a tab delimited array"""
@@ -64,10 +64,34 @@ def getports(interestingrows):
     for eachhost in range(len(interestingrows)):
         # Lets get rid of "Ports:" and the spaces
         interestingports.append(interestingrows[eachhost][1].split(' ')[1:])
-        for eachrow in range(len(interestingports)):
-            interestingports.split('/')[eachrow]
+        for port in interestingports:
+            port.split('/')
     return interestingports
-      
+  
+ 
+  
+  newList = []
+for x in l:
+  for y in x:
+    newList.append(float(y))
+
+  
+  >>> for each in range(len(interestingports)):
+...     for port in range(each):
+...         interestingports.append(data[port][1].split('/')[1:])
+
+
+>>> for eachrow in newdata:
+...     eachrow.split('/')
+
+## Best so far, still doesn't put it in a "master" list
+newlist = []
+for eachrow in data:
+    for y in eachrow:
+        newlist.append(y.split('/')[0:3:2])
+
+        
+        
                                 
     hostandports.append(eachhost)
     for eachport in eachhost:
