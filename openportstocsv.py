@@ -22,7 +22,8 @@ host_list = []
 folder_name = args.folder()
 filelist = os.listdir(folder_name)
 
-""" I have no idea what this does:
+""" Checks the existing list to see if there are any duplicates (e.g. multiple scans)
+  If there is one, append to the existing one instead of adding a second line for the same IP address
 def checkaddr(mlist, maddr):
     for a in mlist:
         if a[C_IP] == maddr:
@@ -102,8 +103,12 @@ for eachrow in data:
     sort by port
     format
         
+    New format goal:
+    [['host1','tcpport1,tcpport2,tcpport3','udpport1,udpport2,udpport3'],
+     ['host1','tcpport1,tcpport2,tcpport3','udpport1,udpport2,udpport3']]
      
-      [ [[host1],[tcp[port1,port2,port3]],[udp[port1]]],[[host2],[tcp[port1,port2,port3]]]] """
+     
+     NOT DOING THIS ANYMORE, PER CHRIS: [ [[host1],[tcp[port1,port2,port3]],[udp[port1]]],[[host2],[tcp[port1,port2,port3]]]] """
       
       
         
