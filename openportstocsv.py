@@ -1,91 +1,207 @@
 #!/usr/bin/python
 #
-# Script to loop through all grepable nmap files (*.gnmap) in a folder
-# and provide CSV output of IP address, and ports.
-#
 # It's ugly, I admit.  But it gets the job done.
 # Chris Wallace - @ImAnEnabler
 
 import csv
-import sys
 import os
+import argparse
+import logging
 
-### FUNCTIONS ###
-def checkaddr(mlist, maddr):
-    for a in mlist:
-      if a[C_IP] == maddr:
-        return mlist.index(a)
-    return -1
+parser = argparse.ArgumentParser(description='Script to loop through all grepable nmap files (*.gnmap) in a folder '
+                                             'and provide CSV output of IP address, and ports.')
+parser.add_argument('--folder', '-f', required=True, help='Name of folder where .gnmap files are located')
+args = parser.parse_args()
 
-### MAIN ###
-	
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+#logging.disable(logging.CRITICAL)
+logging.debug('Start of program')
+
+# Setting initial variables
 C_IP = 0
 C_TCP = 1
 C_UDP = 2
 host_list = []
 
-folder_name = sys.argv[1]
-file_list = os.listdir(folder_name)
+folder_name = args.folder()
+logging.debug('Setting folder_name to %s' % (args) )
+filelist = os.listdir(folder_name)
 
-for file_name in file_list:
-    if file_name.endswith(".gnmap"):
-        #print("opening: " + file_name)
-        csvFile = open(folder_name + file_name)
-        csvReader = csv.reader(csvFile, delimiter='\t')
-        csvData = list(csvReader)
+""" Checks the existing list to see if there are any duplicates (e.g. multiple scans)
+  If there is one, append to the existing one instead of adding a second line for the same IP address
+def checkaddr(mlist, maddr):
+    for a in mlist:
+        if a[C_IP] == maddr:
+            return mlist.index(a)
+    return -1
+"""
 
-        for i in range(len(csvData)):
-                if csvData[i][0].startswith('Host') and csvData[i][1].startswith('Ports'):
-                        listHost = csvData[i][0].split()
-                        checkval = checkaddr(host_list, listHost[1])
-                        if checkval == -1:
-                            m_listitem = [listHost[1], [], []]
-                            listPorts = csvData[i][1][7:].split(',')
-                            for p in range(len(listPorts)):
-                                    #-# uncomment the below if you need to debug
-                                    #print(p)
-                                    #print(csvData[i][1][7:])
-                                    mPorts = listPorts[p].split('/')
-                                    if mPorts[1] == 'open':
-                                            if mPorts[2] == 'tcp':
-                                                    m_listitem[C_TCP].append(int(mPorts[0].strip()))
-                                            if mPorts[2] == 'udp':
-                                                    m_listitem[C_UDP].append(int(mPorts[0].strip()))
-                            host_list.append(m_listitem)
-                        else:
-                            m_listitem = [listHost[1], [], []]
-                            listPorts = csvData[i][1][7:].split(',')
-                            for p in range(len(listPorts)):
-                                    mPorts = listPorts[p].split('/')
-                                    if mPorts[1] == 'open':
-                                            if mPorts[2] == 'tcp':
-                                                    host_list[checkval][C_TCP].append(int(mPorts[0].strip()))
-                                            if mPorts[2] == 'udp':
-                                                    host_list[checkval][C_UDP].append(int(mPorts[0].strip()))
+def openfiles(filelist):
+    """ Open the .gnmap files and creates the output CSV for writing. Turns the .gnmap into a tab delimited array"""
+    for file_name in filelist:
+        if file_name.endswith(".gnmap"):
+            # print("opening: " + file_name)
+            csvFile = open(folder_name + file_name)
+            csvReader = csv.reader(csvFile, delimiter='\t')
+            csvdata = list(csvReader)
+            return csvdata
 
-for line in host_list:
+
+def getinterestingdata(csvdata):
+    """Return a list of entire data for the hosts that have open ports"""
+    interestingrows = []
+    for i in range(len(csvdata)):
+        if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
+            interestingrows.append(csvdata[i])
+    return interestingrows
+    
+
+def gethosts(interestingrows):
+    """Get the IP addresses of the hosts with open ports"""
+    interestinghosts = []
+    for eachhost in range(len(interestingrows)):
+        interestinghosts.append(interestingrows[eachhost][0].split(' ')[1])
+    return interestinghosts
+    
+    
+def getports(interestingrows):
+    """A List of lists consisting of [tcp[port1,port2]][udp[port1,port2]]"""
+    interestingports = []
+    for eachhost in range(len(interestingrows)):
+        # Lets get rid of "Ports:" and the spaces
+        interestingports.append(interestingrows[eachhost][1].split(' ')[1:])
+        for port in interestingports:
+            port.split('/')
+    return interestingports
+  
+ 
+  
+  newList = []
+for x in l:
+  for y in x:
+    newList.append(float(y))
+
+  
+  >>> for each in range(len(interestingports)):
+...     for port in range(each):
+...         interestingports.append(data[port][1].split('/')[1:])
+
+
+>>> for eachrow in newdata:
+...     eachrow.split('/')
+
+## Best so far, still doesn't put it in a "master" list
+newlist = []
+for eachrow in data:
+    for y in eachrow:
+        newlist.append(y.split('/')[0:3:2])
+
+        
+        
+                                
+    hostandports.append(eachhost)
+    for eachport in eachhost:
+                    
+
+    """if open -> append to List of list of list
+    upper protocol
+    sort by port
+    format
+        
+    New format goal:
+    [['host1','tcpport1,tcpport2,tcpport3','udpport1,udpport2,udpport3'],
+     ['host1','tcpport1,tcpport2,tcpport3','udpport1,udpport2,udpport3']]
+     
+     
+     NOT DOING THIS ANYMORE, PER CHRIS: [ [[host1],[tcp[port1,port2,port3]],[udp[port1]]],[[host2],[tcp[port1,port2,port3]]]] """
+      
+      
+        
+''' gymzombie is trying to replace all this. Hopefully this is no longer used:
+
+def populatescandata(csvdata):
+    """Doing the initial population of the CSV file with raw data from the grepable nmap scan results"""
+    for i in range(len(csvdata)):
+        if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
+            # listHost is literally "each host in the list"
+            listHost = csvdata[i][0].split()
+            # NEEDHELP: I believe this is checking to see if listHost is empty?
+            checkval = checkaddr(host_list, listHost[1])
+            # NEEDHELP: Does this ever get called? Based on the checkaddr function, I don't know what would trigger this.
+            if checkval == -1:
+                m_listitem = [listHost[1], [], []]
+                listports = csvdata[i][1][7:].split(',')
+                for p in range(len(listports)):
+                    # -# uncomment the below if you need to debug
+                    # print(p)
+                    # print(csvData[i][1][7:])
+                    mPorts = listports[p].split('/')
+                    if mPorts[1] == 'open':
+                        if mPorts[2] == 'tcp':
+                            m_listitem[C_TCP].append(int(mPorts[0].strip()))
+                        if mPorts[2] == 'udp':
+                            m_listitem[C_UDP].append(int(mPorts[0].strip()))
+                host_list.append(m_listitem)
+            else:
+                m_listitem = [listHost[1], [], []]
+                listports = csvdata[i][1][7:].split(',')
+                for p in range(len(listports)):
+                    mPorts = listports[p].split('/')
+                    if mPorts[1] == 'open':
+                        if mPorts[2] == 'tcp':
+                            host_list[checkval][C_TCP].append(int(mPorts[0].strip()))
+                        if mPorts[2] == 'udp':
+                            host_list[checkval][C_UDP].append(int(mPorts[0].strip()))
+            return host_list
+'''
+
+
+def dropdupetcp(host_list):
+    """Sorts through TCP ports, dropping duplicates"""
+    for line in host_list:
+        str_tcp = ''
+        if len(line[C_TCP]) > 0:
+            list_tcp = list(set(line[C_TCP]))
+            list_tcp.sort()
+            for i_tcp in list_tcp:
+                str_tcp += str(i_tcp) + ', '
+            if len(str_tcp) > 0:
+                str_tcp = str_tcp[:-2]
+    return str_tcp
+
+
+def dropdupeudp(host_list):
+    """Sorts through UDP ports, dropping duplicates"""
+    for line in host_list:
+        str_udp = ''
+        if len(line[C_UDP]) > 0:
+            list_udp = list(set(line[C_UDP]))
+            list_udp.sort()
+            for i_udp in list_udp:
+                str_udp += str(i_udp) + ', '
+            if len(str_udp) > 0:
+                str_udp = str_udp[:-2]
+    return str_udp
+
+
+def prettyoutput(host_list):
+    """Converts the raw CSV to human friendly format"""
     str_ip = line[C_IP]
-    str_tcp = ''
-    str_udp = ''
-    if len(line[C_TCP]) > 0:
-        list_tcp = list(set(line[C_TCP]))
-        list_tcp.sort()
-        for i_tcp in list_tcp:
-            str_tcp += str(i_tcp) + ', '
-        if len(str_tcp) > 0 :
-            str_tcp = str_tcp[:-2]
+    for line in host_list:
+        if len(str_tcp) > 0 and len(str_udp) > 0:
+            print('\"' + str_ip + '\",\"TCP: ' + str_tcp + '\nUDP: ' + str_udp + '\"')
+        if len(str_tcp) == 0 and len(str_udp) > 0:
+            print('\"' + str_ip + '\",\"UDP: ' + str_udp + '\"')
+        if len(str_tcp) > 0 and len(str_udp) == 0:
+            print('\"' + str_ip + '\",\"TCP: ' + str_tcp + '\"')
 
-    if len(line[C_UDP]) > 0:
-        list_udp = list(set(line[C_UDP]))
-        list_udp.sort()
-        for i_udp in list_udp:
-            str_udp += str(i_udp) + ', '
-        if len(str_udp) > 0 :
-            str_udp = str_udp[:-2]
-    if len(str_tcp) > 0 and len(str_udp) > 0:
-        print('\"' + str_ip + '\",\"TCP: ' + str_tcp + '\nUDP: ' + str_udp + '\"')
-    if len(str_tcp) == 0 and len(str_udp) > 0:
-        print('\"' + str_ip + '\",\"UDP: ' + str_udp + '\"')
-    if len(str_tcp) > 0 and len(str_udp) == 0:
-        print('\"' + str_ip + '\",\"TCP: ' + str_tcp + '\"')
 
+def main():
+    getinterestinghosts(openfiles(filelist))
+
+    prettyoutput(makenmapgreatagain(
+
+
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
