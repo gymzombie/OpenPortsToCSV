@@ -6,12 +6,16 @@
 import csv
 import os
 import argparse
-
+import logging
 
 parser = argparse.ArgumentParser(description='Script to loop through all grepable nmap files (*.gnmap) in a folder '
                                              'and provide CSV output of IP address, and ports.')
 parser.add_argument('--folder', '-f', required=True, help='Name of folder where .gnmap files are located')
 args = parser.parse_args()
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+#logging.disable(logging.CRITICAL)
+logging.debug('Start of program')
 
 # Setting initial variables
 C_IP = 0
@@ -20,6 +24,7 @@ C_UDP = 2
 host_list = []
 
 folder_name = args.folder()
+logging.debug('Setting folder_name to %s' % (args) )
 filelist = os.listdir(folder_name)
 
 """ Checks the existing list to see if there are any duplicates (e.g. multiple scans)
