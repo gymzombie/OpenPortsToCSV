@@ -40,7 +40,7 @@ def openfiles(filelist):
     """ Open the .gnmap files and creates the output CSV for writing. Turns the .gnmap into a tab delimited array"""
     for file_name in filelist:
         if file_name.endswith(".gnmap"):
-            # print("opening: " + file_name)
+            logging.debug('Opening file %s' % (file_name))
             csvFile = open(folder_name + file_name)
             csvReader = csv.reader(csvFile, delimiter='\t')
             csvdata = list(csvReader)
@@ -53,6 +53,7 @@ def getinterestingdata(csvdata):
     for i in range(len(csvdata)):
         if csvdata[i][0].startswith('Host') and csvdata[i][1].startswith('Ports'):
             interestingrows.append(csvdata[i])
+    logging.debug('Returning CSVData for open ports: %s' % (csvdata))
     return interestingrows
     
 
@@ -61,6 +62,7 @@ def gethosts(interestingrows):
     interestinghosts = []
     for eachhost in range(len(interestingrows)):
         interestinghosts.append(interestingrows[eachhost][0].split(' ')[1])
+    logging.debug('Returning interesting hosts that have open ports: %s' % (interestinghosts))
     return interestinghosts
     
     
@@ -72,10 +74,11 @@ def getports(interestingrows):
         interestingports.append(interestingrows[eachhost][1].split(' ')[1:])
         for port in interestingports:
             port.split('/')
+    logging.debug('Returning a list of interesting ports: %s' % (interestingports))
     return interestingports
   
  
-  
+    """
   newList = []
 for x in l:
   for y in x:
@@ -103,7 +106,7 @@ for eachrow in data:
     for eachport in eachhost:
                     
 
-    """if open -> append to List of list of list
+if open -> append to List of list of list
     upper protocol
     sort by port
     format
@@ -205,3 +208,4 @@ def main():
 if __name__ == "__main__":
     # execute only if run as a script
     main()
+
